@@ -315,7 +315,17 @@
           
           <div class="form-group">
               <label>输入文本</label>
-              <textarea id="inputText" placeholder="请输入要加密或解密的文本"></textarea>
+              <div style="margin-bottom: 8px; color: #888; font-size: 0.98em;">
+                  支持 <b>Base64</b> 或 <b>16进制</b> 密文，系统自动识别格式。<br>
+                  加密时输入明文，解密时输入密文。
+              </div>
+              <div style="display: flex; gap: 8px; align-items: center;">
+                  <textarea id="inputText" placeholder="请输入要加密或解密的文本" style="flex:1;"></textarea>
+                  <div style="display: flex; flex-direction: column; gap: 6px;">
+                      <button type="button" class="convert-btn" style="padding:6px 10px;" onclick="pasteFromClipboard()">📋 粘贴</button>
+                      <button type="button" class="clear-btn" style="padding:6px 10px; background:#dc3545;" onclick="clearInputText()">清空</button>
+                  </div>
+              </div>
           </div>
           
           <div class="button-group">
@@ -704,7 +714,19 @@
                   options.iv = ivWords;
               }
               
-              const decrypted = CryptoJS.AES.decrypt(inputText, keyWords, options);
+              // 判断输入是base64还是16进制
+              let cipherParams;
+              if (/^[0-9a-fA-F]+$/.test(inputText) && inputText.length % 2 === 0) {
+                  // 16进制密文
+                  cipherParams = CryptoJS.lib.CipherParams.create({
+                      ciphertext: CryptoJS.enc.Hex.parse(inputText)
+                  });
+              } else {
+                  // 默认base64
+                  cipherParams = inputText;
+              }
+              
+              const decrypted = CryptoJS.AES.decrypt(cipherParams, keyWords, options);
               const result = decrypted.toString(CryptoJS.enc.Utf8);
               
               if (!result) {
@@ -725,6 +747,16 @@
           document.getElementById('result').innerHTML = '';
           updateKeyInfo();
           updateIVInfo();
+      }
+      
+      function pasteFromClipboard() {
+          navigator.clipboard.readText().then(text => {
+              document.getElementById('inputText').value = text;
+          });
+      }
+      
+      function clearInputText() {
+          document.getElementById('inputText').value = '';
       }
       
       // 初始化
