@@ -665,8 +665,10 @@
               
               const encrypted = CryptoJS.AES.encrypt(inputText, keyWords, options);
               const result = encrypted.toString();
+              // 获取16进制密文
+              const hexCipher = encrypted.ciphertext.toString(CryptoJS.enc.Hex);
               
-              showResult(`加密结果：<br><br>${result}<br><br>使用的密钥格式：${keyFormat === 'hex' ? '16进制' : '文本'}<br>使用的IV格式：${ivFormat === 'hex' ? '16进制' : '文本'}<br>使用的IV：${ivDisplay}`);
+              showResult(`<b>Base64密文：</b><br>${result}<br><br><b>16进制密文：</b><br>${hexCipher}<br><br>使用的密钥格式：${keyFormat === 'hex' ? '16进制' : '文本'}<br>使用的IV格式：${ivFormat === 'hex' ? '16进制' : '文本'}<br>使用的IV：${ivDisplay}`);
               
           } catch (error) {
               showResult(error.message, 'error');
