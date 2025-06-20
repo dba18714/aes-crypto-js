@@ -296,9 +296,9 @@
           </div>
           
           <div class="form-group" id="ivGroup">
-              <label>初始化向量 (IV) - CBC/CFB/OFB模式需要</label>
+              <label>初始化向量 (IV) - CBC/CFB/OFB/CTR模式需要</label>
               <div class="input-with-format">
-                  <input type="text" id="iv" placeholder="请输入IV（可选，留空自动生成）">
+                  <input type="text" id="iv" placeholder="请输入IV">
                   <div class="format-toggle">
                       <span class="format-btn active" data-format="text" data-target="iv">文本</span>
                       <span class="format-btn" data-format="hex" data-target="iv">16进制</span>
@@ -655,22 +655,11 @@
               let ivHex = '';
               let ivBase64 = '';
               if (mode !== 'ECB') {
-                  if (iv) {
-                      ivWords = parseIV(iv, ivFormat);
-                      ivDisplay = iv;
-                  } else {
-                      // 自动生成IV
-                      ivWords = CryptoJS.lib.WordArray.random(16);
-                      if (ivFormat === 'hex') {
-                          document.getElementById('iv').value = ivWords.toString(CryptoJS.enc.Hex);
-                          ivDisplay = ivWords.toString(CryptoJS.enc.Hex);
-                      } else {
-                          const ivText = ivWords.toString(CryptoJS.enc.Utf8);
-                          document.getElementById('iv').value = ivText;
-                          ivDisplay = ivText;
-                      }
-                      updateIVInfo();
+                  if (!iv) {
+                      throw new Error('当前模式需要IV，请输入初始化向量');
                   }
+                  ivWords = parseIV(iv, ivFormat);
+                  ivDisplay = iv;
                   options.iv = ivWords;
                   // 计算IV的16进制和base64
                   ivHex = ivWords.toString(CryptoJS.enc.Hex);
