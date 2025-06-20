@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AES加密解密工具</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+  <style>
+      * {
+          margin: 0;
+          padding: 0;
+          box-sizing: border-box;
+      }
+      
+      body {
+          font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          min-height: 100vh;
+          padding: 20px;
+      }
+      
+      .container {
+          max-width: 900px;
+          margin: 0 auto;
+          background: white;
+          border-radius: 15px;
+          box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+          overflow: hidden;
+      }
+      
+      .header {
+          background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+          color: white;
+          padding: 30px;
+          text-align: center;
+      }
+      
+      .header h1 {
+          font-size: 2.5em;
+          margin-bottom: 10px;
+      }
+      
+      .header p {
+          opacity: 0.9;
+          font-size: 1.1em;
+      }
+      
+      .content {
+          padding: 40px;
+      }
+      
+      .form-group {
+          margin-bottom: 25px;
+      }
+      
+      label {
+          display: block;
+          margin-bottom: 8px;
+          font-weight: 600;
+          color: #333;
+          font-size: 1.1em;
+      }
+      
+      input, textarea, select {
+          width: 100%;
+          padding: 12px;
+          border: 2px solid #e1e5e9;
+          border-radius: 8px;
+          font-size: 16px;
+          transition: border-color 0.3s ease;
+      }
+      
+      input:focus, textarea:focus, select:focus {
+          outline: none;
+          border-color: #4facfe;
+          box-shadow: 0 0 0 3px rgba(79, 172, 254, 0.1);
+      }
+      
+      textarea {
+          resize: vertical;
+          min-height: 120px;
+          font-family: 'Courier New', monospace;
+      }
+      
+      .input-with-format {
+          position: relative;
+      }
+      
+      .format-toggle {
+          display: flex;
+          gap: 5px;
+          margin-top: 8px;
+      }
+      
+      .format-btn {
+          padding: 4px 12px;
+          border: 1px solid #ddd;
+          background: #f8f9fa;
+          border-radius: 15px;
+          cursor: pointer;
+          font-size: 12px;
+          transition: all 0.3s ease;
+      }
+      
+      .format-btn.active {
+          background: #4facfe;
+          color: white;
+          border-color: #4facfe;
+      }
+      
+      .format-btn:hover {
+          background: #e9ecef;
+      }
+      
+      .format-btn.active:hover {
+          background: #3a8bfd;
+      }
+      
+      .button-group {
+          display: flex;
+          gap: 15px;
+          margin: 30px 0;
+      }
+      
+      button {
+          flex: 1;
+          padding: 15px 25px;
+          border: none;
+          border-radius: 8px;
+          font-size: 16px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.3s ease;
+      }
+      
+      .encrypt-btn {
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          color: white;
+      }
+      
+      .decrypt-btn {
+          background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+          color: white;
+      }
+      
+      .clear-btn {
+          background: #6c757d;
+          color: white;
+      }
+      
+      button:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+      }
+      
+      button:active {
+          transform: translateY(0);
+      }
+      
+      .result {
+          margin-top: 25px;
+          padding: 20px;
+          background: #f8f9fa;
+          border-radius: 8px;
+          border-left: 4px solid #4facfe;
+      }
+      
+      .result h3 {
+          color: #333;
+          margin-bottom: 10px;
+      }
+      
+      .error {
+          background: #f8d7da;
+          border-left-color: #dc3545;
+          color: #721c24;
+      }
+      
+      .success {
+          background: #d4edda;
+          border-left-color: #28a745;
+          color: #155724;
+      }
+      
+      .info-box {
+          background: #e3f2fd;
+          border: 1px solid #bbdefb;
+          border-radius: 8px;
+          padding: 15px;
+          margin-bottom: 20px;
+      }
+      
+      .info-box h4 {
+          color: #1976d2;
+          margin-bottom: 8px;
+      }
+      
+      .info-box ul {
+          color: #1565c0;
+          margin-left: 20px;
+      }
+      
+      .key-info {
+          font-size: 12px;
+          color: #666;
+          margin-top: 5px;
+      }
+      
+      .hex-input {
+          font-family: 'Courier New', monospace;
+      }
+      
+      .generate-group {
+          display: flex;
+          gap: 10px;
+          margin-top: 10px;
+      }
+      
+      .generate-btn {
+          padding: 8px 16px;
+          background: #28a745;
+          color: white;
+          border: none;
+          border-radius: 5px;
+          cursor: pointer;
+          font-size: 14px;
+          transition: background 0.3s ease;
+      }
+      
+      .generate-btn:hover {
+          background: #218838;
+      }
+      
+      .convert-btn {
+          padding: 8px 16px;
+          background: #17a2b8;
+          color: white;
+          border: none;
+          border-radius: 5px;
+          cursor: pointer;
+          font-size: 14px;
+          transition: background 0.3s ease;
+      }
+      
+      .convert-btn:hover {
+          background: #138496;
+      }
+  </style>
+</head>
+<body>
+  <div class="container">
+      <div class="header">
+          <h1>🔐 AES加密解密工具</h1>
+          <p>安全可靠的AES加密解密服务 - 支持文本和16进制格式</p>
+      </div>
+      
+      <div class="content">
+          <div class="info-box">
+              <h4>使用说明：</h4>
+              <ul>
+                  <li>支持AES-128/192/256位加密</li>
+                  <li>支持多种加密模式（CBC、ECB、CFB、OFB、CTR）</li>
+                  <li>密钥和IV支持文本和16进制两种格式</li>
+                  <li>文本格式：16/24/32字符；16进制格式：32/48/64字符</li>
+                  <li>所有操作均在本地完成，不会上传到服务器</li>
+              </ul>
+          </div>
+          
+          <div class="form-group">
+              <label>加密模式</label>
+              <select id="mode">
+                  <option value="CBC">CBC (推荐)</option>
+                  <option value="ECB">ECB</option>
+                  <option value="CFB">CFB</option>
+                  <option value="OFB">OFB</option>
+                  <option value="CTR">CTR</option>
+              </select>
+          </div>
+          
+          <div class="form-group">
+              <label>密钥 (Key)</label>
+              <div class="input-with-format">
+                  <input type="text" id="key" placeholder="请输入密钥">
+                  <div class="format-toggle">
+                      <span class="format-btn active" data-format="text" data-target="key">文本</span>
+                      <span class="format-btn" data-format="hex" data-target="key">16进制</span>
+                  </div>
+                  <div class="key-info">
+                      <span id="keyInfo">文本格式 - 当前长度: 0 字符 (需要16/24/32字符)</span>
+                  </div>
+                  <div class="generate-group">
+                      <button type="button" class="generate-btn" onclick="generateRandomKey()">🎲 生成随机密钥</button>
+                      <button type="button" class="convert-btn" onclick="convertKeyFormat()">🔄 格式转换</button>
+                  </div>
+              </div>
+          </div>
+          
+          <div class="form-group" id="ivGroup">
+              <label>初始化向量 (IV) - CBC/CFB/OFB模式需要</label>
+              <div class="input-with-format">
+                  <input type="text" id="iv" placeholder="请输入IV（可选，留空自动生成）">
+                  <div class="format-toggle">
+                      <span class="format-btn active" data-format="text" data-target="iv">文本</span>
+                      <span class="format-btn" data-format="hex" data-target="iv">16进制</span>
+                  </div>
+                  <div class="key-info">
+                      <span id="ivInfo">文本格式 - 当前长度: 0 字符 (需要16字符)</span>
+                  </div>
+                  <div class="generate-group">
+                      <button type="button" class="generate-btn" onclick="generateRandomIV()">🎲 生成随机IV</button>
+                      <button type="button" class="convert-btn" onclick="convertIVFormat()">🔄 格式转换</button>
+                  </div>
+              </div>
+          </div>
+          
+          <div class="form-group">
+              <label>输入文本</label>
+              <textarea id="inputText" placeholder="请输入要加密或解密的文本"></textarea>
+          </div>
+          
+          <div class="button-group">
+              <button class="encrypt-btn" onclick="encryptText()">🔒 加密</button>
+              <button class="decrypt-btn" onclick="decryptText()">🔓 解密</button>
+              <button class="clear-btn" onclick="clearAll()">🗑️ 清空</button>
+          </div>
+          
+          <div id="result"></div>
+      </div>
+  </div>
+
+  <script>
+      let keyFormat = 'text';
+      let ivFormat = 'text';
+      
+      // 格式切换功能
+      document.querySelectorAll('.format-btn').forEach(btn => {
+          btn.addEventListener('click', function() {
+              const target = this.dataset.target;
+              const format = this.dataset.format;
+              const group = this.parentElement;
+              
+              // 更新按钮状态
+              group.querySelectorAll('.format-btn').forEach(b => b.classList.remove('active'));
+              this.classList.add('active');
+              
+              // 更新格式变量
+              if (target === 'key') {
+                  keyFormat = format;
+                  updateKeyInfo();
+              } else if (target === 'iv') {
+                  ivFormat = format;
+                  updateIVInfo();
+              }
+              
+              // 更新输入框样式
+              const input = document.getElementById(target);
+              if (format === 'hex') {
+                  input.classList.add('hex-input');
+                  input.placeholder = target === 'key' ? '请输入16进制密钥' : '请输入16进制IV';
+              } else {
+                  input.classList.remove('hex-input');
+                  input.placeholder = target === 'key' ? '请输入密钥' : '请输入IV';
+              }
+          });
+      });
+      
+      // 更新密钥信息
+      function updateKeyInfo() {
+          const key = document.getElementById('key').value;
+          const info = document.getElementById('keyInfo');
+          
+          if (keyFormat === 'text') {
+              info.textContent = `文本格式 - 当前长度: ${key.length} 字符 (需要16/24/32字符)`;
+          } else {
+              const hexLength = key.replace(/[^0-9a-fA-F]/g, '').length;
+              info.textContent = `16进制格式 - 当前长度: ${hexLength} 字符 (需要32/48/64字符)`;
+          }
+      }
+      
+      // 更新IV信息
+      function updateIVInfo() {
+          const iv = document.getElementById('iv').value;
+          const info = document.getElementById('ivInfo');
+          
+          if (ivFormat === 'text') {
+              info.textContent = `文本格式 - 当前长度: ${iv.length} 字符 (需要16字符)`;
+          } else {
+              const hexLength = iv.replace(/[^0-9a-fA-F]/g, '').length;
+              info.textContent = `16进制格式 - 当前长度: ${hexLength} 字符 (需要32字符)`;
+          }
+      }
+      
+      // 监听输入变化
+      document.getElementById('key').addEventListener('input', updateKeyInfo);
+      document.getElementById('iv').addEventListener('input', updateIVInfo);
+      
+      // 根据模式显示/隐藏IV输入框
+      document.getElementById('mode').addEventListener('change', function() {
+          const ivGroup = document.getElementById('ivGroup');
+          if (this.value === 'ECB') {
+              ivGroup.style.display = 'none';
+          } else {
+              ivGroup.style.display = 'block';
+          }
+      });
+      
+      // 验证16进制字符串
+      function isValidHex(str) {
+          return /^[0-9a-fA-F]*$/.test(str);
+      }
+      
+      // 文本转16进制
+      function textToHex(text) {
+          return Array.from(text)
+              .map(c => c.charCodeAt(0).toString(16).padStart(2, '0'))
+              .join('');
+      }
+      
+      // 16进制转文本
+      function hexToText(hex) {
+          const cleanHex = hex.replace(/[^0-9a-fA-F]/g, '');
+          if (cleanHex.length % 2 !== 0) {
+              throw new Error('16进制字符串长度必须是偶数');
+          }
+          
+          let result = '';
+          for (let i = 0; i < cleanHex.length; i += 2) {
+              result += String.fromCharCode(parseInt(cleanHex.substr(i, 2), 16));
+          }
+          return result;
+      }
+      
+      // 解析密钥
+      function parseKey(key, format) {
+          if (format === 'hex') {
+              const cleanHex = key.replace(/[^0-9a-fA-F]/g, '');
+              if (!isValidHex(cleanHex)) {
+                  throw new Error('密钥包含无效的16进制字符');
+              }
+              if (![32, 48, 64].includes(cleanHex.length)) {
+                  throw new Error(`16进制密钥长度必须是32、48或64字符，当前长度：${cleanHex.length}`);
+              }
+              return CryptoJS.enc.Hex.parse(cleanHex);
+          } else {
+              if (![16, 24, 32].includes(key.length)) {
+                  throw new Error(`文本密钥长度必须是16、24或32字符，当前长度：${key.length}`);
+              }
+              return CryptoJS.enc.Utf8.parse(key);
+          }
+      }
+      
+      // 解析IV
+      function parseIV(iv, format) {
+          if (!iv) return null;
+          
+          if (format === 'hex') {
+              const cleanHex = iv.replace(/[^0-9a-fA-F]/g, '');
+              if (!isValidHex(cleanHex)) {
+                  throw new Error('IV包含无效的16进制字符');
+              }
+              if (cleanHex.length !== 32) {
+                  throw new Error(`16进制IV长度必须是32字符，当前长度：${cleanHex.length}`);
+              }
+              return CryptoJS.enc.Hex.parse(cleanHex);
+          } else {
+              if (iv.length !== 16) {
+                  throw new Error(`文本IV长度必须是16字符，当前长度：${iv.length}`);
+              }
+              return CryptoJS.enc.Utf8.parse(iv);
+          }
+      }
+      
+      // 生成随机密钥
+      function generateRandomKey() {
+          const length = prompt('请选择密钥长度：\n16 - AES-128\n24 - AES-192\n32 - AES-256', '32');
+          if (length && ['16', '24', '32'].includes(length)) {
+              const keyInput = document.getElementById('key');
+              if (keyFormat === 'hex') {
+                  const hexLength = parseInt(length) * 2;
+                  const randomBytes = CryptoJS.lib.WordArray.random(parseInt(length));
+                  keyInput.value = randomBytes.toString(CryptoJS.enc.Hex);
+              } else {
+                  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+                  let result = '';
+                  for (let i = 0; i < parseInt(length); i++) {
+                      result += chars.charAt(Math.floor(Math.random() * chars.length));
+                  }
+                  keyInput.value = result;
+              }
+              updateKeyInfo();
+          }
+      }
+      
+      // 生成随机IV
+      function generateRandomIV() {
+          const ivInput = document.getElementById('iv');
+          if (ivFormat === 'hex') {
+              const randomBytes = CryptoJS.lib.WordArray.random(16);
+              ivInput.value = randomBytes.toString(CryptoJS.enc.Hex);
+          } else {
+              const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+              let result = '';
+              for (let i = 0; i < 16; i++) {
+                  result += chars.charAt(Math.floor(Math.random() * chars.length));
+              }
+              ivInput.value = result;
+          }
+          updateIVInfo();
+      }
+      
+      // 密钥格式转换
+      function convertKeyFormat() {
+          const keyInput = document.getElementById('key');
+          const key = keyInput.value;
+          if (!key) {
+              alert('请先输入密钥');
+              return;
+          }
+          
+          try {
+              if (keyFormat === 'text') {
+                  // 文本转16进制
+                  keyInput.value = textToHex(key);
+              } else {
+                  // 16进制转文本
+                  keyInput.value = hexToText(key);
+              }
+              
+              // 切换格式
+              const formatBtns = document.querySelectorAll('[data-target="key"]');
+              formatBtns.forEach(btn => {
+                  if (btn.dataset.format === keyFormat) {
+                      btn.classList.remove('active');
+                  } else {
+                      btn.classList.add('active');
+                  }
+              });
+              
+              keyFormat = keyFormat === 'text' ? 'hex' : 'text';
+              updateKeyInfo();
+              
+              // 更新输入框样式
+              if (keyFormat === 'hex') {
+                  keyInput.classList.add('hex-input');
+                  keyInput.placeholder = '请输入16进制密钥';
+              } else {
+                  keyInput.classList.remove('hex-input');
+                  keyInput.placeholder = '请输入密钥';
+              }
+              
+          } catch (error) {
+              alert('格式转换失败: ' + error.message);
+          }
+      }
+      
+      // IV格式转换
+      function convertIVFormat() {
+          const ivInput = document.getElementById('iv');
+          const iv = ivInput.value;
+          if (!iv) {
+              alert('请先输入IV');
+              return;
+          }
+          
+          try {
+              if (ivFormat === 'text') {
+                  // 文本转16进制
+                  ivInput.value = textToHex(iv);
+              } else {
+                  // 16进制转文本
+                  ivInput.value = hexToText(iv);
+              }
+              
+              // 切换格式
+              const formatBtns = document.querySelectorAll('[data-target="iv"]');
+              formatBtns.forEach(btn => {
+                  if (btn.dataset.format === ivFormat) {
+                      btn.classList.remove('active');
+                  } else {
+                      btn.classList.add('active');
+                  }
+              });
+              
+              ivFormat = ivFormat === 'text' ? 'hex' : 'text';
+              updateIVInfo();
+              
+              // 更新输入框样式
+              if (ivFormat === 'hex') {
+                  ivInput.classList.add('hex-input');
+                  ivInput.placeholder = '请输入16进制IV';
+              } else {
+                  ivInput.classList.remove('hex-input');
+                  ivInput.placeholder = '请输入IV';
+              }
+              
+          } catch (error) {
+              alert('格式转换失败: ' + error.message);
+          }
+      }
+      
+      function showResult(message, type = 'success') {
+          const resultDiv = document.getElementById('result');
+          resultDiv.innerHTML = `
+              <div class="result ${type}">
+                  <h3>${type === 'error' ? '❌ 错误' : '✅ 结果'}</h3>
+                  <div style="word-break: break-all; font-family: 'Courier New', monospace;">${message}</div>
+              </div>
+          `;
+      }
+      
+      function getAESMode(mode) {
+          switch(mode) {
+              case 'CBC': return CryptoJS.mode.CBC;
+              case 'ECB': return CryptoJS.mode.ECB;
+              case 'CFB': return CryptoJS.mode.CFB;
+              case 'OFB': return CryptoJS.mode.OFB;
+              case 'CTR': return CryptoJS.mode.CTR;
+              default: return CryptoJS.mode.CBC;
+          }
+      }
+      
+      function encryptText() {
+          try {
+              const key = document.getElementById('key').value;
+              const iv = document.getElementById('iv').value;
+              const inputText = document.getElementById('inputText').value;
+              const mode = document.getElementById('mode').value;
+              
+              if (!key) {
+                  throw new Error('请输入密钥');
+              }
+              
+              if (!inputText) {
+                  throw new Error('请输入要加密的文本');
+              }
+              
+              const keyWords = parseKey(key, keyFormat);
+              let options = {
+                  mode: getAESMode(mode),
+                  padding: CryptoJS.pad.Pkcs7
+              };
+              
+              let ivWords = null;
+              let ivDisplay = '无（ECB模式）';
+              
+              if (mode !== 'ECB') {
+                  if (iv) {
+                      ivWords = parseIV(iv, ivFormat);
+                      ivDisplay = iv;
+                  } else {
+                      // 自动生成IV
+                      ivWords = CryptoJS.lib.WordArray.random(16);
+                      if (ivFormat === 'hex') {
+                          document.getElementById('iv').value = ivWords.toString(CryptoJS.enc.Hex);
+                          ivDisplay = ivWords.toString(CryptoJS.enc.Hex);
+                      } else {
+                          const ivText = ivWords.toString(CryptoJS.enc.Utf8);
+                          document.getElementById('iv').value = ivText;
+                          ivDisplay = ivText;
+                      }
+                      updateIVInfo();
+                  }
+                  options.iv = ivWords;
+              }
+              
+              const encrypted = CryptoJS.AES.encrypt(inputText, keyWords, options);
+              const result = encrypted.toString();
+              
+              showResult(`加密结果：<br><br>${result}<br><br>使用的密钥格式：${keyFormat === 'hex' ? '16进制' : '文本'}<br>使用的IV格式：${ivFormat === 'hex' ? '16进制' : '文本'}<br>使用的IV：${ivDisplay}`);
+              
+          } catch (error) {
+              showResult(error.message, 'error');
+          }
+      }
+      
+      function decryptText() {
+          try {
+              const key = document.getElementById('key').value;
+              const iv = document.getElementById('iv').value;
+              const inputText = document.getElementById('inputText').value;
+              const mode = document.getElementById('mode').value;
+              
+              if (!key) {
+                  throw new Error('请输入密钥');
+              }
+              
+              if (!inputText) {
+                  throw new Error('请输入要解密的文本');
+              }
+              
+              const keyWords = parseKey(key, keyFormat);
+              let options = {
+                  mode: getAESMode(mode),
+                  padding: CryptoJS.pad.Pkcs7
+              };
+              
+              if (mode !== 'ECB') {
+                  if (!iv) {
+                      throw new Error('当前模式需要IV，请输入初始化向量');
+                  }
+                  const ivWords = parseIV(iv, ivFormat);
+                  options.iv = ivWords;
+              }
+              
+              const decrypted = CryptoJS.AES.decrypt(inputText, keyWords, options);
+              const result = decrypted.toString(CryptoJS.enc.Utf8);
+              
+              if (!result) {
+                  throw new Error('解密失败，请检查密钥、IV和加密文本是否正确');
+              }
+              
+              showResult(`解密结果：<br><br>${result}`);
+              
+          } catch (error) {
+              showResult(error.message, 'error');
+          }
+      }
+      
+      function clearAll() {
+          document.getElementById('key').value = '';
+          document.getElementById('iv').value = '';
+          document.getElementById('inputText').value = '';
+          document.getElementById('result').innerHTML = '';
+          updateKeyInfo();
+          updateIVInfo();
+      }
+      
+      // 初始化
+      document.addEventListener('DOMContentLoaded', function() {
+          updateKeyInfo();
+          updateIVInfo();
+      });
+  </script>
+</body>
+</html>
