@@ -482,7 +482,7 @@
       
       // 生成随机密钥
       function generateRandomKey() {
-          const length = prompt('请选择密钥长度：\n16 - AES-128\n24 - AES-192\n32 - AES-256', '32');
+          const length = prompt('请选择密钥长度：\n16字节 - AES-128\n24字节 - AES-192\n32字节 - AES-256', '32');
           if (length && ['16', '24', '32'].includes(length)) {
               const keyInput = document.getElementById('key');
               if (keyFormat === 'hex') {
@@ -652,7 +652,8 @@
               
               let ivWords = null;
               let ivDisplay = '无（ECB模式）';
-              
+              let ivHex = '';
+              let ivBase64 = '';
               if (mode !== 'ECB') {
                   if (iv) {
                       ivWords = parseIV(iv, ivFormat);
@@ -671,6 +672,9 @@
                       updateIVInfo();
                   }
                   options.iv = ivWords;
+                  // 计算IV的16进制和base64
+                  ivHex = ivWords.toString(CryptoJS.enc.Hex);
+                  ivBase64 = ivWords.toString(CryptoJS.enc.Base64);
               }
               
               const encrypted = CryptoJS.AES.encrypt(inputText, keyWords, options);
@@ -678,7 +682,7 @@
               // 获取16进制密文
               const hexCipher = encrypted.ciphertext.toString(CryptoJS.enc.Hex);
               
-              showResult(`<b>Base64密文：</b><br>${result}<br><br><b>16进制密文：</b><br>${hexCipher}<br><br>使用的密钥格式：${keyFormat === 'hex' ? '16进制' : '文本'}<br>使用的IV格式：${ivFormat === 'hex' ? '16进制' : '文本'}<br>使用的IV：${ivDisplay}`);
+              showResult(`<b>Base64密文：</b><br>${result}<br><br><b>16进制密文：</b><br>${hexCipher}<br><br><b>IV（16进制）：</b><br>${ivHex || '无'}<br><b>IV（Base64）：</b><br>${ivBase64 || '无'}<br><br>使用的密钥格式：${keyFormat === 'hex' ? '16进制' : '文本'}<br>使用的IV格式：${ivFormat === 'hex' ? '16进制' : '文本'}<br>使用的IV：${ivDisplay}`);
               
           } catch (error) {
               showResult(error.message, 'error');
